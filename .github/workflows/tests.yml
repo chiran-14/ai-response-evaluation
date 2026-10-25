@@ -1,0 +1,22 @@
+name: AI evaluation
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test evaluator including known failures
+        run: python -m unittest discover -s tests -v
+      - name: Evaluate reference fixture
+        run: python -m ai_eval.runner
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: evaluation-report
+          path: reports/latest/
+          if-no-files-found: warn
